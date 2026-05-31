@@ -1,0 +1,110 @@
+@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300..900;1,8..60,300..900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-secondary-container: #1b2e1c;
+  --color-restricted-dark: #121212;
+  --color-on-tertiary-fixed-variant: #C5A059;
+  --color-on-error-container: #ffdcdb;
+  --color-error-container: #530006;
+  --color-tertiary: #C5A059;
+  --color-inverse-on-surface: #0a0a0a;
+  --color-surface-container: #141414;
+  --color-paper-background: #0A0A0A;
+  --color-on-error: #ffffff;
+  --color-on-background: #E5E1DA;
+  --color-error: #ffb4ab;
+  --color-surface-container-low: #101010;
+  --color-secondary-fixed: #1b2e1c;
+  --color-surface-dim: #0c0c0c;
+  --color-mineral-gray: #7C7872;
+  --color-on-secondary: #E5E1DA;
+  --color-surface-variant: #1e1e1e;
+  --color-secondary: #4E6E4F;
+  --color-secondary-fixed-dim: #385339;
+  --color-surface-tint: #C5A059;
+  --color-tertiary-container: #302716;
+  --color-inverse-primary: #C5A059;
+  --color-on-secondary-fixed: #e2fce2;
+  --color-on-secondary-fixed-variant: #adcfad;
+  --color-on-primary-fixed-variant: #ffb5a1;
+  --color-on-tertiary: #0a0a0a;
+  --color-inverse-surface: #E5E1DA;
+  --color-clay-terracotta: #C5A059;
+  --color-on-tertiary-fixed: #ffdeae;
+  --color-surface-bright: #222222;
+  --color-tertiary-fixed: #C5A059;
+  --color-on-primary-fixed: #390c02;
+  --color-on-tertiary-container: #ffdeae;
+  --color-validation-seal: #4E6E4F;
+  --color-surface-container-lowest: #080808;
+  --color-on-secondary-container: #b3d7b4;
+  --color-outline: #3E3B37;
+  --color-on-surface-variant: #AFABA2;
+  --color-primary-fixed: #302716;
+  --color-quarantine-amber: #C5A059;
+  --color-surface-container-highest: #282828;
+  --color-on-primary-container: #ffdbd1;
+  --color-background: #0A0A0A;
+  --color-surface: #141414;
+  --color-on-surface: #E5E1DA;
+  --color-primary-fixed-dim: #ffb5a1;
+  --color-cerrado-ochre: #C5A059;
+  --color-primary: #C5A059;
+  --color-conflict-red: #B04A41;
+  --color-surface-container-high: #1c1c1c;
+  --color-on-primary: #0a0a0a;
+  --color-outline-variant: #2d2a27;
+  --color-tertiary-fixed-dim: #f9bc53;
+  --color-forest-deep: #2A3B2B;
+
+  --font-sans: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Source Serif 4", ui-serif, Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --font-raiz-display: "Source Serif 4", ui-serif, Georgia, serif;
+  --font-raiz-display-mobile: "Source Serif 4", ui-serif, Georgia, serif;
+  --font-tronco-heading: "Source Serif 4", ui-serif, Georgia, serif;
+  --font-galho-subheading: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-body-narrative: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-folha-technical: "JetBrains Mono", ui-monospace, monospace;
+  --font-label-caps: "JetBrains Mono", ui-monospace, monospace;
+}
+
+body {
+  font-family: var(--font-body-narrative);
+  background-color: var(--color-paper-background);
+  color: var(--color-on-surface);
+}
+
+.paper-texture {
+  background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuCsZ7tFCO9cdQiJRtDs_AB9OE69GqSy-RGFTbwMqkgPxZdQog2K2iIn6u6hQJPSHO7CxG4Kc1_eBp-oaFIOUcac-NNEttkSw1fuXUs1vBecupsckOiRmrZvibSzjOMihgJ0VWtpi1de2oEBNV0BnTgh92j4-JZ1G9lbhoOJCRhu7AsZF-tsG0EnIB1uDP8XPpHrK3BB7w9CNEJDvRVzlrn1KmEn9txBwkaEG6TfeakkdNFvVL9bAzuYjsCKxZ8dfvjCF4_9AZNCXNg);
+  background-repeat: repeat;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #3A3A36;
+  border-radius: 2px;
+}
+
+/* Material symbols configurations */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+}

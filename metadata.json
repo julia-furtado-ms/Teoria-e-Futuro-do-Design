@@ -1,0 +1,6 @@
+{
+  "name": "Teia de Saberes",
+  "description": "Plataforma de Governança Comunitária e salvaguarda de saberes tradicionais, promovendo rastreabilidade ancestral, linhagens de conhecimento e rituais de validação.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
