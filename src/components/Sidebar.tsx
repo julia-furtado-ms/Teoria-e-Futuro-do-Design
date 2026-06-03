@@ -67,7 +67,7 @@ export default function Sidebar({ activeTab, setActiveTab, pendingCount, current
           <span className="font-sans text-[15px]">Linhagem de Saberes</span>
         </button>
 
-        {currentUser?.role !== 'CONTRIBUIDOR' && (
+        {currentUser?.role === 'GUARDIÃ' && (
           <button
             onClick={() => setActiveTab('guardia')}
             className={`flex items-center justify-between px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 group text-left ${
@@ -110,17 +110,8 @@ export default function Sidebar({ activeTab, setActiveTab, pendingCount, current
         {currentUser ? (
           <div className="p-4 bg-surface-container rounded-xl border border-mineral-gray/10 flex flex-col gap-3 relative group">
             <div className="flex items-center gap-3 select-none">
-              <div className="w-10 h-10 rounded-full bg-cerrado-ochre/20 overflow-hidden border border-cerrado-ochre/30 flex items-center justify-center font-bold text-clay-terracotta text-sm shrink-0">
-                {currentUser.avatarUrl ? (
-                  <img 
-                    src={currentUser.avatarUrl} 
-                    alt={currentUser.username}
-                    className="w-full h-full object-cover"
-                    referrerPolicy="no-referrer"
-                  />
-                ) : (
-                  <span className="uppercase">{currentUser.username[0]}</span>
-                )}
+              <div className="w-10 h-10 rounded-full bg-cerrado-ochre/20 overflow-hidden border border-cerrado-ochre/30 flex items-center justify-center font-bold text-clay-terracotta text-sm shrink-0 uppercase">
+                <span>{currentUser.username[0]}</span>
               </div>
               <div className="overflow-hidden flex-1">
                 <p className="font-mono text-[9px] uppercase tracking-wider text-cerrado-ochre font-semibold leading-none mb-1">

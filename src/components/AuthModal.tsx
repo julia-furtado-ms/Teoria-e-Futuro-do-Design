@@ -33,7 +33,6 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess }
       role: 'GUARDIÃ' as const,
       biome: 'Cerrado' as const,
       territory: 'Cavalcante, GO',
-      avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBLFUwZq5wvRo5gWuKVJN75jqpop2pb-dgaINgwFPpRZF6Bicj-Qd27HmKHGEHlrTYbToO9iMv89FSo6QCbE5puC49meNzjp1q_J31tO2OdxXMHkpIpl9I3CPsDF_LTO_z81vFTmuuhxqs6tQrhQqmFR-pJiTHCaJ-FHETQxvBOvfArLmz5ao4i3QPknffzoOBY6CQjJwqlQcYd825lz7lwDyoI1YjRoWn6FV74UfvTYF5c_VET386Xy1f6Ogf-gLBbgdHlEdw0d38'
     },
     {
       email: 'jovelina@teia.org',
@@ -43,7 +42,6 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess }
       role: 'GUARDIÃ' as const,
       biome: 'Cerrado' as const,
       territory: 'Jalapão, TO',
-      avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDBmee3PM1s_ZrpLqDTn8UGGuSRhnpRSJKt1zAKBayanPYbAO50VKV4od4EavwkQX_l0z3B-VIHiZ7oNr4eqbEx1GySYYfN7T9_KmKmg59LjG9YIhLl7W1mLaOsq_FE68uxWpwOouHShb1uEw7QjR8TjEHXQzr9SiB1UZlWbrhtw2SQJR1lUyPgUeMIwJiin2GkhIaKocZ7zp_mYOjt1vLiPTG91Lkytj49c6Mm0RcmezbB9ZMIEjUMPjG4IEW9_i4dSimMg8hMmdc'
     },
     {
       email: 'sebastiana@teia.org',
@@ -53,7 +51,6 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess }
       role: 'CONTRIBUIDOR' as const,
       biome: 'Amazônia' as const,
       territory: 'Altamira, PA',
-      avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB8QM3GuNLh8jHd4_gFKwdjxfvWElLWgYLaiAf6MD-eD4v6CRNmTXHFRNpMJx4BhHUIKe_nk5Out8Onyh8995JErTdyArg2kfJlU-oHT5MB_Lv9QJnfB2A7Fsjvcs7zILWuOopuTqy6v42IfuzqOwvKq3eljLoBr8sbUaxDRi8mHNI4l3H0B-jv6UIyRkEFX-i_n-ocERYwrdBaf8u6O6sScx5dGzmZLRFdrARsRQ4qMTvdukyat58LhIOO0TDN8_2wi-q_jh7vLz8'
     }
   ];
 
@@ -80,7 +77,7 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess }
         role: seed.role,
         biome: seed.biome,
         territory: seed.territory,
-        avatarUrl: seed.avatarUrl
+        
       };
       usersList.push(newUser);
       localStorage.setItem('teia_registered', JSON.stringify(usersList));
@@ -138,17 +135,7 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess }
         return;
       }
 
-      // Pre-assigned avatars or random matching avatars based on options
-      const femaleAvatars = [
-        'https://lh3.googleusercontent.com/aida-public/AB6AXuBLFUwZq5wvRo5gWuKVJN75jqpop2pb-dgaINgwFPpRZF6Bicj-Qd27HmKHGEHlrTYbToO9iMv89FSo6QCbE5puC49meNzjp1q_J31tO2OdxXMHkpIpl9I3CPsDF_LTO_z81vFTmuuhxqs6tQrhQqmFR-pJiTHCaJ-FHETQxvBOvfArLmz5ao4i3QPknffzoOBY6CQjJwqlQcYd825lz7lwDyoI1YjRoWn6FV74UfvTYF5c_VET386Xy1f6Ogf-gLBbgdHlEdw0d38',
-        'https://lh3.googleusercontent.com/aida-public/AB6AXuDBmee3PM1s_ZrpLqDTn8UGGuSRhnpRSJKt1zAKBayanPYbAO50VKV4od4EavwkQX_l0z3B-VIHiZ7oNr4eqbEx1GySYYfN7T9_KmKmg59LjG9YIhLl7W1mLaOsq_FE68uxWpwOouHShb1uEw7QjR8TjEHXQzr9SiB1UZlWbrhtw2SQJR1lUyPgUeMIwJiin2GkhIaKocZ7zp_mYOjt1vLiPTG91Lkytj49c6Mm0RcmezbB9ZMIEjUMPjG4IEW9_i4dSimMg8hMmdc',
-        'https://lh3.googleusercontent.com/aida-public/AB6AXuB8QM3GuNLh8jHd4_gFKwdjxfvWElLWgYLaiAf6MD-eD4v6CRNmTXHFRNpMJx4BhHUIKe_nk5Out8Onyh8995JErTdyArg2kfJlU-oHT5MB_Lv9QJnfB2A7Fsjvcs7zILWuOopuTqy6v42IfuzqOwvKq3eljLoBr8sbUaxDRi8mHNI4l3H0B-jv6UIyRkEFX-i_n-ocERYwrdBaf8u6O6sScx5dGzmZLRFdrARsRQ4qMTvdukyat58LhIOO0TDN8_2wi-q_jh7vLz8'
-      ];
-      
-      const avatarUrl = role === 'GUARDIÃ' 
-        ? (biome === 'Cerrado' ? femaleAvatars[1] : femaleAvatars[0])
-        : femaleAvatars[2];
-
+      // Avatares não utilizados — não atribuir `avatarUrl`
       const newUser: User = {
         id: `user-${Date.now()}`,
         username,
@@ -157,7 +144,6 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess }
         role,
         biome,
         territory,
-        avatarUrl
       };
 
       usersList.push(newUser);

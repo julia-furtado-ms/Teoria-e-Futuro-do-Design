@@ -10,6 +10,7 @@ import RitualContribuicao from './components/RitualContribuicao';
 import RitualModal from './components/RitualModal';
 import AuthModal from './components/AuthModal';
 import Home from './components/Home';
+import SearchResults from './components/SearchResults';
 import { ShieldCheck, Sparkles, Database, Plus, CheckCircle, ShieldAlert } from 'lucide-react';
 
 const DEFAULT_USER: User = {
@@ -20,7 +21,6 @@ const DEFAULT_USER: User = {
   role: 'GUARDIÃ',
   biome: 'Cerrado',
   territory: 'Cavalcante, GO',
-  avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBLFUwZq5wvRo5gWuKVJN75jqpop2pb-dgaINgwFPpRZF6Bicj-Qd27HmKHGEHlrTYbToO9iMv89FSo6QCbE5puC49meNzjp1q_J31tO2OdxXMHkpIpl9I3CPsDF_LTO_z81vFTmuuhxqs6tQrhQqmFR-pJiTHCaJ-FHETQxvBOvfArLmz5ao4i3QPknffzoOBY6CQjJwqlQcYd825lz7lwDyoI1YjRoWn6FV74UfvTYF5c_VET386Xy1f6Ogf-gLBbgdHlEdw0d38'
 };
 
 export default function App() {
@@ -90,8 +90,9 @@ export default function App() {
   }, [toast]);
 
   // Redirect contributor if on guardian page
+  // Ensure only Guardiãs can access the guardian panel
   useEffect(() => {
-    if (currentUser?.role === 'CONTRIBUIDOR' && activeTab === 'guardia') {
+    if (activeTab === 'guardia' && currentUser?.role !== 'GUARDIÃ') {
       setActiveTab('biomas');
     }
   }, [currentUser, activeTab]);
@@ -144,8 +145,12 @@ export default function App() {
 
     setSaberes([freshSaber, ...saberes]);
     
-    // Switch to Painel da Guardiã instantly so they can review/validate their draft!
-    setActiveTab('guardia');
+    // Switch to Painel da Guardiã only if the current user is a Guardiã
+    if (currentUser?.role === 'GUARDIÃ') {
+      setActiveTab('guardia');
+    } else {
+      setActiveTab('home');
+    }
     setToast({
       message: 'Novo saber registrado com sucesso! O relato foi encaminhado para a Quarentena comunitária do Painel da Guardiã.',
       type: 'success'
@@ -250,47 +255,63 @@ export default function App() {
 
         {/* Dynamic screen views viewport with layout animations */}
         <main className="p-10 pt-30 max-w-7xl mx-auto w-full flex-grow">
-          {activeTab === 'home' && (
-            <Home 
-              setActiveTab={setActiveTab} 
-              setSelectedBiome={setSelectedBiomeFilter} 
+          {/* If there's an active search query, show search results globally */}
+          {searchQuery.trim().length > 0 ? (
+            <SearchResults 
+              saberes={saberes}
+              query={searchQuery}
+              onSelectSaber={(id) => {
+                setSelectedSaberId(id);
+                setActiveTab('linhagem');
+                setSearchQuery('');
+              }}
+              onClear={() => setSearchQuery('')}
             />
-          )}
+          ) : (
+            <>
+              {activeTab === 'home' && (
+                <Home 
+                  setActiveTab={setActiveTab} 
+                  setSelectedBiome={setSelectedBiomeFilter} 
+                />
+              )}
 
-          {activeTab === 'biomas' && (
-            <ExplorarBiomas 
-              saberes={saberes} 
-              selectedBiome={selectedBiomeFilter} 
-              setSelectedBiome={setSelectedBiomeFilter}
-              selectedCommunity={selectedCommunityFilter}
-              setSelectedCommunity={setSelectedCommunityFilter}
-              searchQuery={searchQuery}
-              onSelectSaber={handleSelectSaberLineage}
-            />
-          )}
+              {activeTab === 'biomas' && (
+                <ExplorarBiomas 
+                  saberes={saberes} 
+                  selectedBiome={selectedBiomeFilter} 
+                  setSelectedBiome={setSelectedBiomeFilter}
+                  selectedCommunity={selectedCommunityFilter}
+                  setSelectedCommunity={setSelectedCommunityFilter}
+                  searchQuery={searchQuery}
+                  onSelectSaber={handleSelectSaberLineage}
+                />
+              )}
 
-          {activeTab === 'linhagem' && (
-            <LinhagemSaberes 
-              saberes={saberes} 
-              selectedSaberId={selectedSaberId}
-              onSelectSaber={setSelectedSaberId}
-            />
-          )}
+              {activeTab === 'linhagem' && (
+                <LinhagemSaberes 
+                  saberes={saberes} 
+                  selectedSaberId={selectedSaberId}
+                  onSelectSaber={setSelectedSaberId}
+                />
+              )}
 
-          {activeTab === 'guardia' && (
-            <PainelGuardia 
-              saberes={saberes} 
-              onStartRitual={(saber) => setActiveValidationSaber(saber)}
-              onMediateDispute={handleMediateDispute}
-              currentUser={currentUser}
-            />
-          )}
+              {activeTab === 'guardia' && (
+                <PainelGuardia 
+                  saberes={saberes} 
+                  onStartRitual={(saber) => setActiveValidationSaber(saber)}
+                  onMediateDispute={handleMediateDispute}
+                  currentUser={currentUser}
+                />
+              )}
 
-          {activeTab === 'contribuicao' && (
-            <RitualContribuicao 
-              onSubmit={handleNewSaberContributed}
-              currentUser={currentUser}
-            />
+              {activeTab === 'contribuicao' && (
+                <RitualContribuicao 
+                  onSubmit={handleNewSaberContributed}
+                  currentUser={currentUser}
+                />
+              )}
+            </>
           )}
         </main>
 
