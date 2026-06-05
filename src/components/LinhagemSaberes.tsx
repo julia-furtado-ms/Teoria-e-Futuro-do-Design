@@ -1,7 +1,7 @@
 import { Saber } from '../types';
 import { 
   CheckCircle, MapPin, AlertCircle, Quote, ShieldCheck, 
-  Calendar, Award, Database, RefreshCw, ChevronDown
+  Calendar, Award, Database, RefreshCw, ChevronDown, Link
 } from 'lucide-react';
 
 interface LinhagemSaberesProps {
@@ -154,6 +154,29 @@ export default function LinhagemSaberes({
                   <div className="bg-surface-container border-l-4 border-cerrado-ochre p-4 italic text-sm text-on-surface-variant flex gap-3 rounded-r-lg relative overflow-hidden">
                     <Quote className="w-6 h-6 text-cerrado-ochre/25 shrink-0 mt-0.5" />
                     <p className="relative z-10 leading-relaxed">"{saber.quote}"</p>
+                  </div>
+                )}
+
+                {saber.relatedLinks && saber.relatedLinks.length > 0 && (
+                  <div className="mt-6 bg-surface-container-high border border-mineral-gray/10 rounded-2xl p-5">
+                    <div className="flex items-center gap-2 mb-3 text-sm font-mono uppercase tracking-[0.2em] text-mineral-gray font-bold">
+                      <Link className="w-4 h-4" />
+                      REFERÊNCIAS EXTERNAS
+                    </div>
+                    <div className="space-y-3">
+                      {saber.relatedLinks.map((link, index) => (
+                        <a
+                          key={`${link.url}-${index}`}
+                          href={link.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="block rounded-xl border border-outline/30 bg-white/5 p-4 text-sm text-primary hover:bg-surface-container/80 transition-colors"
+                        >
+                          <div className="font-semibold">{link.label || link.url}</div>
+                          {link.label && <div className="text-[12px] text-on-surface-variant mt-1 break-words">{link.url}</div>}
+                        </a>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>

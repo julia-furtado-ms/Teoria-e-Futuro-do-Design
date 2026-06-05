@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Saber, BiomeType, User } from '../types';
 import { 
-  Info, Sparkles, FileUp, Save, Heart, TreePine, 
+  Info, Sparkles, Save, Heart, TreePine, 
   Sun, CheckCircle, HelpCircle, FileText, Trash2, Globe, ChevronRight, ShieldAlert
 } from 'lucide-react';
 
@@ -10,9 +10,10 @@ interface RitualContribuicaoProps {
   currentUser: User | null;
 }
 
-interface AttachmentFile {
-  file: File;
+interface LinkEntry {
   id: string;
+  url: string;
+  label?: string;
 }
 
 export default function RitualContribuicao({ onSubmit, currentUser }: RitualContribuicaoProps) {
@@ -26,9 +27,9 @@ export default function RitualContribuicao({ onSubmit, currentUser }: RitualCont
   const [q3, setQ3] = useState(''); // Vivenciado
   const [intent, setIntent] = useState('');
   const [selectedBiome, setSelectedBiome] = useState<BiomeType>('Cerrado');
-  const [attachments, setAttachments] = useState<AttachmentFile[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+  const [relatedLinks, setRelatedLinks] = useState<LinkEntry[]>([]);
+  const [linkUrl, setLinkUrl] = useState('');
+  const [linkLabel, setLinkLabel] = useState('');
 
   // Auto-fill form values based on authenticated user
   useEffect(() => {
@@ -61,52 +62,47 @@ export default function RitualContribuicao({ onSubmit, currentUser }: RitualCont
     }
   }, [saberText]);
 
-  const handleAddAttachment = () => {
-    fileInputRef.current?.click();
+  const isValidUrl = (value: string) => {
+    try {
+      new URL(value);
+      return true;
+    } catch {
+      return false;
+    }
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.currentTarget.files;
-    if (!files) return;
+  const handleAddLink = () => {
+    const trimmedUrl = linkUrl.trim();
+    const trimmedLabel = linkLabel.trim();
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      
-      // Validar tamanho do arquivo
-      if (file.size > MAX_FILE_SIZE) {
-        alert(`O arquivo "${file.name}" excede o tamanho máximo de 50MB`);
-        continue;
-      }
-
-      // Verificar se o arquivo já foi adicionado
-      const fileExists = attachments.some(a => a.file.name === file.name && a.file.size === file.size);
-      if (fileExists) {
-        alert(`O arquivo "${file.name}" já foi adicionado`);
-        continue;
-      }
-
-      // Adicionar o arquivo
-      const newAttachment: AttachmentFile = {
-        file,
-        id: `${file.name}-${Date.now()}-${Math.random()}`
-      };
-      setAttachments(prev => [...prev, newAttachment]);
+    if (!trimmedUrl) {
+      alert('Por favor, insira a URL do link.');
+      return;
     }
 
-    // Limpar o input para permitir selecionar o mesmo arquivo novamente
-    e.currentTarget.value = '';
+    if (!isValidUrl(trimmedUrl)) {
+      alert('Por favor, insira uma URL válida.');
+      return;
+    }
+
+    if (relatedLinks.some(link => link.url === trimmedUrl)) {
+      alert('Este link já foi adicionado.');
+      return;
+    }
+
+    const newLink: LinkEntry = {
+      id: `link-${Date.now()}-${Math.random()}`,
+      url: trimmedUrl,
+      label: trimmedLabel || undefined
+    };
+
+    setRelatedLinks(prev => [...prev, newLink]);
+    setLinkUrl('');
+    setLinkLabel('');
   };
 
-  const handleRemoveAttachment = (id: string) => {
-    setAttachments(attachments.filter(item => item.id !== id));
-  };
-
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+  const handleRemoveLink = (id: string) => {
+    setRelatedLinks(prev => prev.filter(item => item.id !== id));
   };
 
   const handleFormSubmit = (e: React.FormEvent) => {
@@ -145,7 +141,8 @@ export default function RitualContribuicao({ onSubmit, currentUser }: RitualCont
         restrictions: q2,
         lived: q3,
         intent: intent
-      }
+      },
+      relatedLinks: relatedLinks.map(({ url, label }) => ({ url, label }))
     };
 
     onSubmit(newSaber);
@@ -158,6 +155,9 @@ export default function RitualContribuicao({ onSubmit, currentUser }: RitualCont
     setQ2('');
     setQ3('');
     setIntent('');
+    setLinkUrl('');
+    setLinkLabel('');
+    setRelatedLinks([]);
   };
 
   return (
@@ -495,54 +495,82 @@ export default function RitualContribuicao({ onSubmit, currentUser }: RitualCont
             </span>
 
             <div className="space-y-4">
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                accept="audio/*,video/*,image/*,.pdf,.doc,.docx"
-                onChange={handleFileSelect}
-                className="hidden"
-              />
+              <div className="grid grid-cols-1 gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="linkUrl" className="font-mono text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">
+                    Link de Referência
+                  </label>
+                  <input
+                    id="linkUrl"
+                    type="url"
+                    value={linkUrl}
+                    onChange={(e) => setLinkUrl(e.target.value)}
+                    placeholder="https://example.com/recurso"
+                    className="bg-surface-container-low border border-outline/30 rounded-lg p-3 font-sans text-sm focus:outline-none focus:ring-1 focus:ring-cerrado-ochre text-on-surface placeholder-on-surface-variant/40"
+                  />
+                </div>
 
-              <button
-                type="button"
-                onClick={handleAddAttachment}
-                className="w-full flex items-center gap-2.5 justify-center p-3.5 bg-surface-container-high/40 border border-dashed border-outline/30 hover:border-cerrado-ochre/50 rounded-xl cursor-pointer hover:bg-surface-container-high transition-all text-sm font-sans"
-              >
-                <FileUp className="w-5 h-5 text-clay-terracotta shrink-0" />
-                <span className="font-semibold text-on-surface opacity-85">
-                  Anexar depoimentos, áudios ou vídeos (máx 50MB)
-                </span>
-              </button>
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="linkLabel" className="font-mono text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">
+                    Descrição opcional
+                  </label>
+                  <input
+                    id="linkLabel"
+                    type="text"
+                    value={linkLabel}
+                    onChange={(e) => setLinkLabel(e.target.value)}
+                    placeholder="Ex: artigo, vídeo ou registro de campo"
+                    className="bg-surface-container-low border border-outline/30 rounded-lg p-3 font-sans text-sm focus:outline-none focus:ring-1 focus:ring-cerrado-ochre text-on-surface placeholder-on-surface-variant/40"
+                  />
+                </div>
 
-              <div className="flex flex-wrap gap-2">
-                {attachments.map(item => (
-                  <div 
-                    key={item.id}
-                    className="bg-surface-container-high px-3 py-1.5 rounded-lg text-[11.5px] font-mono text-on-surface font-semibold flex items-center gap-2 border border-mineral-gray/10 max-w-xs"
-                  >
-                    <span className="truncate" title={`${item.file.name} (${formatFileSize(item.file.size)})`}>
-                      {item.file.name}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveAttachment(item.id)}
-                      className="p-0.5 text-mineral-gray/50 hover:text-conflict-red transition-colors shrink-0"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ))}
+                <button
+                  type="button"
+                  onClick={handleAddLink}
+                  className="w-full flex items-center gap-2.5 justify-center p-3.5 bg-surface-container-high/40 border border-dashed border-outline/30 hover:border-cerrado-ochre/50 rounded-xl cursor-pointer hover:bg-surface-container-high transition-all text-sm font-sans"
+                >
+                  <FileText className="w-5 h-5 text-clay-terracotta shrink-0" />
+                  <span className="font-semibold text-on-surface opacity-85">
+                    Adicionar link de referência
+                  </span>
+                </button>
               </div>
 
-              {attachments.length > 0 && (
-                <p className="text-[11px] text-on-surface-variant/70 font-sans">
-                  Total: {attachments.length} arquivo{attachments.length !== 1 ? 's' : ''} • 
-                  {attachments.reduce((sum, a) => sum + a.file.size, 0) > 0 && (
-                    <span className="ml-1">{formatFileSize(attachments.reduce((sum, a) => sum + a.file.size, 0))}</span>
-                  )}
-                </p>
-              )}
+              <div className="space-y-3">
+                {relatedLinks.length > 0 ? (
+                  relatedLinks.map(item => (
+                    <div
+                      key={item.id}
+                      className="bg-surface-container-high px-3 py-3 rounded-2xl border border-mineral-gray/10 flex flex-col gap-2 text-sm"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <a
+                            href={item.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="font-semibold text-primary hover:underline break-words"
+                          >
+                            {item.label || item.url}
+                          </a>
+                          <p className="text-[12px] text-on-surface-variant break-words">{item.url}</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveLink(item.id)}
+                          className="p-1 text-mineral-gray/60 hover:text-conflict-red transition-colors"
+                        >
+                          <Trash2 className="w-4.5 h-4.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-on-surface-variant">
+                    Adicione links para referências ou materiais relacionados. O conteúdo permanece off-site e apenas a URL é registrada.
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 
