@@ -1,4 +1,4 @@
-export type BiomeType = 'Cerrado' | 'Amazônia' | 'Mata Atlântica' | 'Caatinga' | 'Pantanal';
+export type BiomeType = 'Cerrado' | 'Amazônia' | 'Mata Atlântica' | 'Caatinga' | 'Pantanal' | 'Pampa';
 
 export type SaberType = 
   | 'SABER TRADICIONAL'

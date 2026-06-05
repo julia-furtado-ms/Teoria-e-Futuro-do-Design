@@ -73,6 +73,10 @@ export default function ExplorarBiomas({
     'Pantanal': {
       src: 'https://images.unsplash.com/photo-1547036967-23d11aacaee0?auto=format&fit=crop&w=1200&q=80',
       alt: 'Planície Alagada do Pantanal'
+    },
+    'Pampa': {
+      src: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
+      alt: 'Campos do Pampa Brasileiro'
     }
   };
 
@@ -94,7 +98,7 @@ export default function ExplorarBiomas({
           
           <div className="absolute bottom-6 left-6 right-6 md:right-auto bg-[#141414]/95 border border-[#3E3B37]/65 p-5 rounded-xl shadow-lg backdrop-blur-md max-w-xl">
             <h3 className="font-serif text-2xl font-bold tracking-tight text-cerrado-ochre mb-1.5">
-              Explorando Saberes do {selectedBiome === 'Todos' ? 'Cerrado' : selectedBiome}
+              Explorando Saberes do {selectedBiome === 'Todos' ? 'Todos os Biomas' : selectedBiome}
             </h3>
             <p className="font-sans text-[13px] text-on-surface-variant italic font-medium leading-relaxed">
               {selectedBiome === 'Amazônia' 
@@ -150,7 +154,7 @@ export default function ExplorarBiomas({
                   BIOMA ATIVO
                 </label>
                 <div className="space-y-2">
-                  {(['Cerrado', 'Amazônia', 'Todos'] as const).map(biome => (
+                  {(['Cerrado', 'Amazônia', 'Mata Atlântica', 'Caatinga', 'Pantanal', 'Pampa', 'Todos'] as const).map(biome => (
                     <button
                       key={biome}
                       onClick={() => setSelectedBiome(biome)}

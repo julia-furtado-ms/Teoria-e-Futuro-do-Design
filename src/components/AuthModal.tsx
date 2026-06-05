@@ -280,6 +280,7 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess }
                       <option value="Mata Atlântica">Mata Atlântica</option>
                       <option value="Caatinga">Caatinga</option>
                       <option value="Pantanal">Pantanal</option>
+                      <option value="Pampa">Pampa</option>
                     </select>
                   </div>
                 </div>

@@ -472,6 +472,19 @@ export default function RitualContribuicao({ onSubmit, currentUser }: RitualCont
               >
                 Mata Atlântica
               </button>
+
+              <button
+                type="button"
+                onClick={() => setSelectedBiome('Pampa')}
+                className={`px-4 py-2.5 rounded-full border-2 font-bold text-[13px] flex items-center gap-1.5 transition-all duration-200 ${
+                  selectedBiome === 'Pampa'
+                    ? 'bg-cyan-700 border-cyan-700 text-white shadow-xs'
+                    : 'border-mineral-gray/25 text-on-surface-variant hover:border-mineral-gray/40'
+                }`}
+              >
+                <Globe className="w-4 h-4 shrink-0" />
+                Pampa
+              </button>
             </div>
           </div>
 
