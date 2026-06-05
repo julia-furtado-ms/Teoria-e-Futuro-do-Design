@@ -157,6 +157,22 @@ export default function LinhagemSaberes({
                   </div>
                 )}
 
+                {saber.rawMaterials && saber.rawMaterials.length > 0 && (
+                  <div className="mt-6 bg-cerrado-ochre/10 border border-cerrado-ochre/20 rounded-2xl p-5">
+                    <p className="font-mono text-[11px] font-bold text-cerrado-ochre uppercase tracking-wider mb-3">Matérias Primas</p>
+                    <div className="flex flex-wrap gap-2">
+                      {saber.rawMaterials.map((material, index) => (
+                        <span
+                          key={`${material}-${index}`}
+                          className="bg-cerrado-ochre/25 border border-cerrado-ochre/40 text-on-surface px-3 py-1.5 rounded-full font-mono text-[11px] font-semibold"
+                        >
+                          {material}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {saber.relatedLinks && saber.relatedLinks.length > 0 && (
                   <div className="mt-6 bg-surface-container-high border border-mineral-gray/10 rounded-2xl p-5">
                     <div className="flex items-center gap-2 mb-3 text-sm font-mono uppercase tracking-[0.2em] text-mineral-gray font-bold">

@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Saber, BiomeType, User } from '../types';
 import { 
-  Info, Sparkles, Save, Heart, TreePine, 
-  Sun, CheckCircle, HelpCircle, FileText, Trash2, Globe, ChevronRight, ShieldAlert
+  Info, Sparkles, Save, CheckCircle, HelpCircle, FileText, Trash2, ChevronRight, ShieldAlert
 } from 'lucide-react';
 
 interface RitualContribuicaoProps {
@@ -30,6 +29,8 @@ export default function RitualContribuicao({ onSubmit, currentUser }: RitualCont
   const [relatedLinks, setRelatedLinks] = useState<LinkEntry[]>([]);
   const [linkUrl, setLinkUrl] = useState('');
   const [linkLabel, setLinkLabel] = useState('');
+  const [rawMaterials, setRawMaterials] = useState<string[]>([]);
+  const [materialInput, setMaterialInput] = useState('');
 
   // Auto-fill form values based on authenticated user
   useEffect(() => {
@@ -105,6 +106,24 @@ export default function RitualContribuicao({ onSubmit, currentUser }: RitualCont
     setRelatedLinks(prev => prev.filter(item => item.id !== id));
   };
 
+  const handleAddMaterial = () => {
+    const trimmed = materialInput.trim();
+    if (!trimmed) {
+      alert('Por favor, digite o nome de uma matéria prima.');
+      return;
+    }
+    if (rawMaterials.includes(trimmed)) {
+      alert('Esta matéria prima já foi adicionada.');
+      return;
+    }
+    setRawMaterials(prev => [...prev, trimmed]);
+    setMaterialInput('');
+  };
+
+  const handleRemoveMaterial = (material: string) => {
+    setRawMaterials(prev => prev.filter(m => m !== material));
+  };
+
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !saberText.trim() || !community.trim()) {
@@ -142,7 +161,8 @@ export default function RitualContribuicao({ onSubmit, currentUser }: RitualCont
         lived: q3,
         intent: intent
       },
-      relatedLinks: relatedLinks.map(({ url, label }) => ({ url, label }))
+      relatedLinks: relatedLinks.map(({ url, label }) => ({ url, label })),
+      rawMaterials: rawMaterials.length > 0 ? rawMaterials : undefined
     };
 
     onSubmit(newSaber);
@@ -158,6 +178,8 @@ export default function RitualContribuicao({ onSubmit, currentUser }: RitualCont
     setLinkUrl('');
     setLinkLabel('');
     setRelatedLinks([]);
+    setMaterialInput('');
+    setRawMaterials([]);
   };
 
   return (
@@ -426,72 +448,87 @@ export default function RitualContribuicao({ onSubmit, currentUser }: RitualCont
           </div>
         </div>
 
-        {/* Section 4: Biome selection & Related files */}
+        {/* Section 4: Biome selection & Raw Materials & Related files */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
           
-          {/* Biome Choice */}
-          <div className="bg-surface-container p-6 rounded-2xl border border-mineral-gray/10 flex flex-col gap-4 select-none">
-            <span className="font-mono text-[9px] font-bold text-mineral-gray tracking-wider uppercase">
-              BIOMA & ECOSSISTEMA
-            </span>
-            <div className="flex flex-wrap gap-2.5 mt-2">
-              <button
-                type="button"
-                onClick={() => setSelectedBiome('Cerrado')}
-                className={`px-4 py-2.5 rounded-full border-2 font-bold text-[13px] flex items-center gap-1.5 transition-all duration-200 ${
-                  selectedBiome === 'Cerrado'
-                    ? 'bg-cerrado-ochre border-cerrado-ochre text-white shadow-xs'
-                    : 'border-mineral-gray/25 text-on-surface-variant hover:border-mineral-gray/40'
-                }`}
+          {/* Biome Choice & Raw Materials */}
+          <div className="space-y-6">
+            {/* Biome Dropdown */}
+            <div className="bg-surface-container p-6 rounded-2xl border border-mineral-gray/10 flex flex-col gap-4">
+              <span className="font-mono text-[9px] font-bold text-mineral-gray tracking-wider uppercase">
+                BIOMA & ECOSSISTEMA
+              </span>
+              <select
+                value={selectedBiome}
+                onChange={(e) => setSelectedBiome(e.target.value as BiomeType)}
+                className="w-full bg-surface-container-low border border-outline/30 rounded-lg py-3 px-4 text-sm focus:outline-none focus:ring-1 focus:ring-cerrado-ochre text-on-surface font-semibold h-11 cursor-pointer"
               >
-                <Sun className="w-4 h-4 shrink-0" />
-                Cerrado
-              </button>
+                <option value="Cerrado">Cerrado</option>
+                <option value="Amazônia">Amazônia</option>
+                <option value="Mata Atlântica">Mata Atlântica</option>
+                <option value="Caatinga">Caatinga</option>
+                <option value="Pantanal">Pantanal</option>
+                <option value="Pampa">Pampa</option>
+              </select>
+            </div>
 
-              <button
-                type="button"
-                onClick={() => setSelectedBiome('Amazônia')}
-                className={`px-4 py-2.5 rounded-full border-2 font-bold text-[13px] flex items-center gap-1.5 transition-all duration-200 ${
-                  selectedBiome === 'Amazônia'
-                    ? 'bg-forest-deep border-forest-deep text-white shadow-xs'
-                    : 'border-mineral-gray/25 text-on-surface-variant hover:border-mineral-gray/40'
-                }`}
-              >
-                <TreePine className="w-4 h-4 shrink-0" />
-                Amazônia
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setSelectedBiome('Mata Atlântica')}
-                className={`px-4 py-2.5 rounded-full border-2 font-bold text-[13px] flex items-center gap-1.5 transition-all duration-200 ${
-                  selectedBiome === 'Mata Atlântica'
-                    ? 'bg-secondary border-secondary text-white shadow-xs'
-                    : 'border-mineral-gray/25 text-on-surface-variant hover:border-mineral-gray/40'
-                }`}
-              >
-                Mata Atlântica
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setSelectedBiome('Pampa')}
-                className={`px-4 py-2.5 rounded-full border-2 font-bold text-[13px] flex items-center gap-1.5 transition-all duration-200 ${
-                  selectedBiome === 'Pampa'
-                    ? 'bg-cyan-700 border-cyan-700 text-white shadow-xs'
-                    : 'border-mineral-gray/25 text-on-surface-variant hover:border-mineral-gray/40'
-                }`}
-              >
-                <Globe className="w-4 h-4 shrink-0" />
-                Pampa
-              </button>
+            {/* Raw Materials */}
+            <div className="bg-surface-container p-6 rounded-2xl border border-mineral-gray/10 flex flex-col gap-4">
+              <span className="font-mono text-[9px] font-bold text-mineral-gray tracking-wider uppercase">
+                MATÉRIAS PRIMAS
+              </span>
+              <div className="flex flex-col gap-3">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={materialInput}
+                    onChange={(e) => setMaterialInput(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddMaterial();
+                      }
+                    }}
+                    placeholder="Ex: Buriti, Cerâmica, Fibra natural..."
+                    className="flex-1 bg-surface-container-low border border-outline/30 rounded-lg p-3 font-sans text-sm focus:outline-none focus:ring-1 focus:ring-cerrado-ochre text-on-surface placeholder-on-surface-variant/40"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddMaterial}
+                    className="bg-cerrado-ochre/25 border border-cerrado-ochre/50 hover:bg-cerrado-ochre/40 text-cerrado-ochre font-bold px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Adicionar
+                  </button>
+                </div>
+                {rawMaterials.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {rawMaterials.map((material, index) => (
+                      <div
+                        key={index}
+                        className="bg-cerrado-ochre/15 border border-cerrado-ochre/40 text-on-surface px-3 py-1.5 rounded-full font-mono text-[11px] font-semibold flex items-center gap-2"
+                      >
+                        {material}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveMaterial(material)}
+                          className="text-mineral-gray/60 hover:text-conflict-red transition-colors"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-on-surface-variant">Adicione as matérias primas usadas neste saber.</p>
+                )}
+              </div>
             </div>
           </div>
 
           {/* Dynamic Drag-and-drop simulated attachment list */}
           <div className="bg-surface-container p-6 rounded-2xl border border-mineral-gray/10 flex flex-col justify-between">
             <span className="font-mono text-[9px] font-bold text-mineral-gray tracking-wider uppercase mb-4 select-none">
-              MATERIAL RELACIONADO (ANEXOS)
+              REFERÊNCIAS EXTERNAS
             </span>
 
             <div className="space-y-4">

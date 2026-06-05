@@ -141,7 +141,8 @@ export default function App() {
       relations: newSaberData.relations || [],
       validation: undefined,
       questions: newSaberData.questions,
-      relatedLinks: newSaberData.relatedLinks
+      relatedLinks: newSaberData.relatedLinks,
+      rawMaterials: newSaberData.rawMaterials
     };
 
     setSaberes([freshSaber, ...saberes]);

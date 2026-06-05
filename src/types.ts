@@ -84,6 +84,9 @@ export interface Saber {
   
   // External reference links for content stored off-site
   relatedLinks?: SaberLink[];
+  
+  // Raw materials / resources used in this knowledge
+  rawMaterials?: string[];
 }
 
 export interface User {
