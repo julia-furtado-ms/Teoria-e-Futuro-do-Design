@@ -25,6 +25,11 @@ export interface SaberRelation {
   initial: string;
 }
 
+export interface SaberLink {
+  url: string;
+  label?: string;
+}
+
 export interface Saber {
   id: string;
   title: string;
@@ -76,6 +81,9 @@ export interface Saber {
     lived: string;
     intent: string;
   };
+  
+  // External reference links for content stored off-site
+  relatedLinks?: SaberLink[];
 }
 
 export interface User {

@@ -140,7 +140,8 @@ export default function App() {
       createdAt: 'Hoje',
       relations: newSaberData.relations || [],
       validation: undefined,
-      questions: newSaberData.questions
+      questions: newSaberData.questions,
+      relatedLinks: newSaberData.relatedLinks
     };
 
     setSaberes([freshSaber, ...saberes]);
