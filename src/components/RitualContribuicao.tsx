@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Saber, BiomeType, User } from '../types';
 import { 
-  Info, Sparkles, Save, CheckCircle, HelpCircle, FileText, Trash2, ChevronRight, ShieldAlert
+  Info, Sparkles, Save, CheckCircle, FileText, Trash2, ChevronRight, ShieldAlert, TreeDeciduous
 } from 'lucide-react';
 
 interface RitualContribuicaoProps {
@@ -298,7 +298,7 @@ export default function RitualContribuicao({ onSubmit, currentUser }: RitualCont
         {/* Section 2: O Saber Description (The Relato card) */}
         <div className="bg-surface-container border border-outline/20 p-8 rounded-2xl shadow-sm relative overflow-hidden">
           <div className="absolute top-0 right-0 p-4 opacity-5 select-none md:block hidden">
-            <TreePine className="w-48 h-48 text-forest-deep" />
+            <TreeDeciduous className="w-48 h-48 text-forest-deep" />
           </div>
 
           <div className="relative z-10 space-y-6">
