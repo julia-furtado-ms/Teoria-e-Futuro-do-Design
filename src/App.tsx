@@ -287,79 +287,82 @@ export default function App() {
 
         {/* Dynamic screen views viewport with layout animations */}
         <main className="p-10 pt-30 max-w-7xl mx-auto w-full flex-grow">
-          {isLoadingSaberes ? (
-            <div className="text-center p-14 border border-dashed border-mineral-gray/25 rounded-2xl bg-surface-container-low">
+          {isLoadingSaberes && (
+            <div className="text-center p-14 border border-dashed border-mineral-gray/25 rounded-2xl bg-surface-container-low mb-10">
               <div className="font-serif text-xl font-bold mb-3">Carregando registros reais...</div>
               <p className="text-sm text-mineral-gray/70">
                 Conectando ao Supabase para buscar os saberes atuais do território.
               </p>
             </div>
-          ) : saberesError ? (
-            <div className="text-center p-14 border border-dashed border-rose-400/40 rounded-2xl bg-rose-50">
-              <div className="font-serif text-xl font-bold text-rose-600 mb-3">Erro ao carregar dados</div>
+          )}
+
+          {saberesError && (
+            <div className="text-center p-6 border border-rose-400/30 rounded-2xl bg-rose-50 text-rose-700 mb-10">
+              <div className="font-serif text-lg font-bold text-rose-600 mb-2">Erro de conexão ao Supabase</div>
               <p className="text-sm text-rose-700/90">
                 {saberesError}
               </p>
+              <p className="text-xs text-rose-700/70 mt-2">
+                O aplicativo segue disponível localmente enquanto o backend não estiver configurado.
+              </p>
             </div>
+          )}
+
+          {/* If there's an active search query, show search results globally */}
+          {searchQuery.trim().length > 0 ? (
+            <SearchResults 
+              saberes={saberes}
+              query={searchQuery}
+              onSelectSaber={(id) => {
+                setSelectedSaberId(id);
+                setActiveTab('linhagem');
+                setSearchQuery('');
+              }}
+              onClear={() => setSearchQuery('')}
+            />
           ) : (
             <>
-              {/* If there's an active search query, show search results globally */}
-              {searchQuery.trim().length > 0 ? (
-                <SearchResults 
-                  saberes={saberes}
-                  query={searchQuery}
-                  onSelectSaber={(id) => {
-                    setSelectedSaberId(id);
-                    setActiveTab('linhagem');
-                    setSearchQuery('');
-                  }}
-                  onClear={() => setSearchQuery('')}
+              {activeTab === 'home' && (
+                <Home 
+                  setActiveTab={setActiveTab} 
+                  setSelectedBiome={setSelectedBiomeFilter} 
                 />
-              ) : (
-                <>
-                  {activeTab === 'home' && (
-                    <Home 
-                      setActiveTab={setActiveTab} 
-                      setSelectedBiome={setSelectedBiomeFilter} 
-                    />
-                  )}
+              )}
 
-                  {activeTab === 'biomas' && (
-                    <ExplorarBiomas 
-                      saberes={saberes} 
-                      selectedBiome={selectedBiomeFilter} 
-                      setSelectedBiome={setSelectedBiomeFilter}
-                      selectedCommunity={selectedCommunityFilter}
-                      setSelectedCommunity={setSelectedCommunityFilter}
-                      searchQuery={searchQuery}
-                      onSelectSaber={handleSelectSaberLineage}
-                    />
-                  )}
+              {activeTab === 'biomas' && (
+                <ExplorarBiomas 
+                  saberes={saberes} 
+                  selectedBiome={selectedBiomeFilter} 
+                  setSelectedBiome={setSelectedBiomeFilter}
+                  selectedCommunity={selectedCommunityFilter}
+                  setSelectedCommunity={setSelectedCommunityFilter}
+                  searchQuery={searchQuery}
+                  onSelectSaber={handleSelectSaberLineage}
+                />
+              )}
 
-                  {activeTab === 'linhagem' && (
-                    <LinhagemSaberes 
-                      saberes={saberes} 
-                      selectedSaberId={selectedSaberId}
-                      onSelectSaber={setSelectedSaberId}
-                    />
-                  )}
+              {activeTab === 'linhagem' && (
+                <LinhagemSaberes 
+                  saberes={saberes} 
+                  selectedSaberId={selectedSaberId}
+                  onSelectSaber={setSelectedSaberId}
+                />
+              )}
 
-                  {activeTab === 'guardia' && (
-                    <PainelGuardia 
-                      saberes={saberes} 
-                      onStartRitual={(saber) => setActiveValidationSaber(saber)}
-                      onMediateDispute={handleMediateDispute}
-                      currentUser={currentUser}
-                    />
-                  )}
+              {activeTab === 'guardia' && (
+                <PainelGuardia 
+                  saberes={saberes} 
+                  onStartRitual={(saber) => setActiveValidationSaber(saber)}
+                  onMediateDispute={handleMediateDispute}
+                  currentUser={currentUser}
+                />
+              )}
 
-                  {activeTab === 'contribuicao' && (
-                    <RitualContribuicao 
-                      onSubmit={handleNewSaberContributed}
-                      currentUser={currentUser}
-                    />
-                  )}
-                </>
+              {activeTab === 'contribuicao' && (
+                <RitualContribuicao 
+                  onSubmit={handleNewSaberContributed}
+                  currentUser={currentUser}
+                />
               )}
             </>
           )}
