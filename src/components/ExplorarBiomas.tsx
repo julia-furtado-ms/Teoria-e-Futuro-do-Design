@@ -103,7 +103,7 @@ export default function ExplorarBiomas({
             <p className="font-sans text-[13px] text-on-surface-variant italic font-medium leading-relaxed">
               {selectedBiome === 'Amazônia' 
                 ? '"Onde o dossel abraça o infinito e o rio fertiliza a palavra."'
-                : '"Onde a água nasce no alto e a raiz mergulha no profundo."'}
+                : '""Nesses tempos de céus de cinzas e chumbos, nós precisamos de árvores desesperadamente verdes." — Mário Quintana"'}
             </p>
           </div>
 
