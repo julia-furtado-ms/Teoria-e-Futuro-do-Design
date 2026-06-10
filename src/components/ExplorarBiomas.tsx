@@ -51,31 +51,31 @@ export default function ExplorarBiomas({
 
   const BIOME_IMAGES: Record<BiomeType | 'Todos', { src: string; alt: string }> = {
     'Todos': {
-      src: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA-XgOlhOLgxN8jn5M-Z_KmSSTsKbvheseYTVV7r65X3KyxWZIDGAisXOnBZJpPDS9CiElkIqjar9pUF8bmkKxTitZIKINmUn8GSl3RJWezBrX5d6Vqq0K_Ou4_CR5V2rCTA3qnjIOPc_TbR_Mbc2zKTsVaTJcBMSBWMOPZklgDVkDDEpMBqVsT12u60NQnrKBbV0LuYYZdTg36Uw-k1AqkszEQxQygR4nCi1-Q2Bod82TI96vGgANYhhca80BLu9nGe435VVw7hO0',
+      src: 'https://live.staticflickr.com/4127/4996295321_aa8dffd797_b.jpg',
       alt: 'Paisagem do Cerrado Brasileiro'
     },
     'Cerrado': {
-      src: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA-XgOlhOLgxN8jn5M-Z_KmSSTsKbvheseYTVV7r65X3KyxWZIDGAisXOnBZJpPDS9CiElkIqjar9pUF8bmkKxTitZIKINmUn8GSl3RJWezBrX5d6Vqq0K_Ou4_CR5V2rCTA3qnjIOPc_TbR_Mbc2zKTsVaTJcBMSBWMOPZklgDVkDDEpMBqVsT12u60NQnrKBbV0LuYYZdTg36Uw-k1AqkszEQxQygR4nCi1-Q2Bod82TI96vGgANYhhca80BLu9nGe435VVw7hO0',
+      src: 'https://upload.wikimedia.org/wikipedia/commons/5/52/Cerrado_-_panoramio_%284%29.jpg',
       alt: 'Paisagem do Cerrado Brasileiro'
     },
     'Amazônia': {
-      src: 'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?auto=format&fit=crop&w=1200&q=80',
+      src: 'https://upload.wikimedia.org/wikipedia/commons/3/3e/Amaz%C3%B4nia_e_o_Rio_Madeira.JPG',
       alt: 'Floresta Amazônica e Rio Amazonas'
     },
     'Mata Atlântica': {
-      src: 'https://images.unsplash.com/photo-1542856391-010fb87dcfed?auto=format&fit=crop&w=1200&q=80',
+      src: 'https://upload.wikimedia.org/wikipedia/commons/1/10/Mata_atlantica_parte_baixa_Itatiaia.jpg',
       alt: 'Mata Atlântica Preservada'
     },
     'Caatinga': {
-      src: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=1200&q=80',
+      src: 'https://upload.wikimedia.org/wikipedia/commons/e/ea/Vegetacao_tipica_da_caatinga_nas_encostas_do_rio.jpg',
       alt: 'Bioma da Caatinga Brasileira Semiarida'
     },
     'Pantanal': {
-      src: 'https://images.unsplash.com/photo-1547036967-23d11aacaee0?auto=format&fit=crop&w=1200&q=80',
+      src: 'https://upload.wikimedia.org/wikipedia/commons/5/52/Pantanal_em_Mato_Grosso_Brasil.jpg',
       alt: 'Planície Alagada do Pantanal'
     },
     'Pampa': {
-      src: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
+      src: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Bioma_pampa.jpg/1920px-Bioma_pampa.jpg?_=20190803015419',
       alt: 'Campos do Pampa Brasileiro'
     }
   };
