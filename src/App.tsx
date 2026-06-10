@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Saber, BiomeType, SaberStatus, User } from './types';
-import { INITIAL_SABERES } from './initialData';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
+import { fetchSaberes, createSaber, updateSaber } from './lib/supabase';
 import ExplorarBiomas from './components/ExplorarBiomas';
 import LinhagemSaberes from './components/LinhagemSaberes';
 import PainelGuardia from './components/PainelGuardia';
@@ -39,18 +39,10 @@ export default function App() {
 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
-  // Database State (offline-first loaded from LocalStorage or seed data)
-  const [saberes, setSaberes] = useState<Saber[]>(() => {
-    const saved = localStorage.getItem('teia_de_saberes_db');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error('Failed to parse saved database state:', e);
-      }
-    }
-    return INITIAL_SABERES;
-  });
+  // Database State loaded from Supabase
+  const [saberes, setSaberes] = useState<Saber[]>([]);
+  const [isLoadingSaberes, setIsLoadingSaberes] = useState(true);
+  const [saberesError, setSaberesError] = useState<string | null>(null);
 
   // Navigation and Filter States
   const [activeTab, setActiveTab] = useState<'home' | 'biomas' | 'linhagem' | 'guardia' | 'contribuicao'>('home');
@@ -65,10 +57,26 @@ export default function App() {
   // Custom live alerts/toasts
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' } | null>(null);
 
-  // Persist schema adjustments to local storage
+  // Fetch saberes from Supabase on first load
   useEffect(() => {
-    localStorage.setItem('teia_de_saberes_db', JSON.stringify(saberes));
-  }, [saberes]);
+    async function loadSaberes() {
+      setIsLoadingSaberes(true);
+      setSaberesError(null);
+
+      const { data, error } = await fetchSaberes();
+      if (error) {
+        console.error('Failed to load saberes from Supabase:', error);
+        setSaberesError(error.message);
+      }
+
+      if (data) {
+        setSaberes(data);
+      }
+      setIsLoadingSaberes(false);
+    }
+
+    loadSaberes();
+  }, []);
 
   // Persist current user to local storage
   useEffect(() => {
@@ -124,7 +132,7 @@ export default function App() {
   };
 
   // Form Contribution Action
-  const handleNewSaberContributed = (newSaberData: Partial<Saber>) => {
+  const handleNewSaberContributed = async (newSaberData: Partial<Saber>) => {
     const freshSaber: Saber = {
       id: `saber-${Date.now()}`,
       title: newSaberData.title || 'Saber Sem Título',
@@ -137,7 +145,7 @@ export default function App() {
       territory: newSaberData.territory || 'Goiás, GO',
       coordinates: newSaberData.coordinates || '15° S, 47° W',
       hash: newSaberData.hash || `sha256:${Math.random().toString(16).slice(2, 18)}`,
-      createdAt: 'Hoje',
+      createdAt: new Date().toISOString(),
       relations: newSaberData.relations || [],
       validation: undefined,
       questions: newSaberData.questions,
@@ -145,9 +153,18 @@ export default function App() {
       rawMaterials: newSaberData.rawMaterials
     };
 
-    setSaberes([freshSaber, ...saberes]);
+    const { data, error } = await createSaber(freshSaber);
+    if (error || !data) {
+      console.error('Failed to create saber in Supabase:', error);
+      setToast({
+        message: 'Erro ao salvar o novo saber. Tente novamente mais tarde.',
+        type: 'info'
+      });
+      return;
+    }
+
+    setSaberes([data, ...saberes]);
     
-    // Switch to Painel da Guardiã only if the current user is a Guardiã
     if (currentUser?.role === 'GUARDIÃ') {
       setActiveTab('guardia');
     } else {
@@ -160,36 +177,49 @@ export default function App() {
   };
 
   // Saber Validation Action (Ritual de Validação Completo)
-  const handleSaberValidated = (
+  const handleSaberValidated = async (
     saberId: string, 
     validatorName: string, 
     restrictedOption: 'sigilo' | 'publico'
   ) => {
-    const updated = saberes.map(s => {
-      if (s.id === saberId) {
-        const finalStatus: SaberStatus = restrictedOption === 'sigilo' ? 'RESTRITO' : 'VALIDADO';
-        
-        return {
-          ...s,
-          status: finalStatus,
-          type: restrictedOption === 'sigilo' ? 'SABER RESTRITO' as const : 'SABER TRADICIONAL' as const,
-          restrictedLevel: restrictedOption === 'sigilo' ? 'Guardiãs de 3º Grau' : undefined,
-          restrictedLabel: restrictedOption === 'sigilo' ? 'Saber Restrito à Comunidade' : undefined,
-          restrictedMessage: restrictedOption === 'sigilo' ? 'Apenas Guardiãs de 3º Grau de Iniciação podem visualizar os ritos de floração e salvaguarda desta espécie nascente.' : undefined,
-          validation: {
-            validatorName,
-            validatorId: `0x${Math.random().toString(16).substring(2, 6).toUpperCase()}${Math.random().toString(16).substring(2, 6).toUpperCase()}...FF${Math.floor(Math.random() * 90 + 10)}`,
-            date: new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' }),
-            lunarMatch: saberId.includes('barbatimao') ? 'Minguante (98% match)' : undefined,
-            reason: 'Saber legitimado por transmissão oral e testagem territorial validada.',
-            blockHeight: `18,${Math.floor(Math.random() * 800 + 400).toString().padEnd(3, '0')},${Math.floor(Math.random() * 800 + 100).toString().padEnd(3, '0')}`
-          }
-        };
-      }
-      return s;
-    });
+    const saberToUpdate = saberes.find((s) => s.id === saberId);
+    if (!saberToUpdate) {
+      setToast({
+        message: 'Saber não encontrado para validação.',
+        type: 'info'
+      });
+      return;
+    }
 
-    setSaberes(updated);
+    const finalStatus: SaberStatus = restrictedOption === 'sigilo' ? 'RESTRITO' : 'VALIDADO';
+    const updatedSaber: Saber = {
+      ...saberToUpdate,
+      status: finalStatus,
+      type: restrictedOption === 'sigilo' ? 'SABER RESTRITO' as const : 'SABER TRADICIONAL' as const,
+      restrictedLevel: restrictedOption === 'sigilo' ? 'Guardiãs de 3º Grau' : undefined,
+      restrictedLabel: restrictedOption === 'sigilo' ? 'Saber Restrito à Comunidade' : undefined,
+      restrictedMessage: restrictedOption === 'sigilo' ? 'Apenas Guardiãs de 3º Grau de Iniciação podem visualizar os ritos de floração e salvaguarda desta espécie nascente.' : undefined,
+      validation: {
+        validatorName,
+        validatorId: `0x${Math.random().toString(16).substring(2, 6).toUpperCase()}${Math.random().toString(16).substring(2, 6).toUpperCase()}...FF${Math.floor(Math.random() * 90 + 10)}`,
+        date: new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' }),
+        lunarMatch: saberId.includes('barbatimao') ? 'Minguante (98% match)' : undefined,
+        reason: 'Saber legitimado por transmissão oral e testagem territorial validada.',
+        blockHeight: `18,${Math.floor(Math.random() * 800 + 400).toString().padEnd(3, '0')},${Math.floor(Math.random() * 800 + 100).toString().padEnd(3, '0')}`
+      }
+    };
+
+    const { data, error } = await updateSaber(saberId, updatedSaber);
+    if (error || !data) {
+      console.error('Failed to update saber in Supabase:', error);
+      setToast({
+        message: 'Erro ao atualizar o saber. Tente novamente mais tarde.',
+        type: 'info'
+      });
+      return;
+    }
+
+    setSaberes(saberes.map((s) => (s.id === saberId ? data : s)));
     setToast({
       message: `Consenso estabelecido! O saber foi legitimado por "${validatorName}" e gravado permanentemente na linhagem como ${restrictedOption === 'sigilo' ? 'RESTRITO' : 'SABER TRADICIONAL'}.`,
       type: 'success'
@@ -257,61 +287,79 @@ export default function App() {
 
         {/* Dynamic screen views viewport with layout animations */}
         <main className="p-10 pt-30 max-w-7xl mx-auto w-full flex-grow">
-          {/* If there's an active search query, show search results globally */}
-          {searchQuery.trim().length > 0 ? (
-            <SearchResults 
-              saberes={saberes}
-              query={searchQuery}
-              onSelectSaber={(id) => {
-                setSelectedSaberId(id);
-                setActiveTab('linhagem');
-                setSearchQuery('');
-              }}
-              onClear={() => setSearchQuery('')}
-            />
+          {isLoadingSaberes ? (
+            <div className="text-center p-14 border border-dashed border-mineral-gray/25 rounded-2xl bg-surface-container-low">
+              <div className="font-serif text-xl font-bold mb-3">Carregando registros reais...</div>
+              <p className="text-sm text-mineral-gray/70">
+                Conectando ao Supabase para buscar os saberes atuais do território.
+              </p>
+            </div>
+          ) : saberesError ? (
+            <div className="text-center p-14 border border-dashed border-rose-400/40 rounded-2xl bg-rose-50">
+              <div className="font-serif text-xl font-bold text-rose-600 mb-3">Erro ao carregar dados</div>
+              <p className="text-sm text-rose-700/90">
+                {saberesError}
+              </p>
+            </div>
           ) : (
             <>
-              {activeTab === 'home' && (
-                <Home 
-                  setActiveTab={setActiveTab} 
-                  setSelectedBiome={setSelectedBiomeFilter} 
+              {/* If there's an active search query, show search results globally */}
+              {searchQuery.trim().length > 0 ? (
+                <SearchResults 
+                  saberes={saberes}
+                  query={searchQuery}
+                  onSelectSaber={(id) => {
+                    setSelectedSaberId(id);
+                    setActiveTab('linhagem');
+                    setSearchQuery('');
+                  }}
+                  onClear={() => setSearchQuery('')}
                 />
-              )}
+              ) : (
+                <>
+                  {activeTab === 'home' && (
+                    <Home 
+                      setActiveTab={setActiveTab} 
+                      setSelectedBiome={setSelectedBiomeFilter} 
+                    />
+                  )}
 
-              {activeTab === 'biomas' && (
-                <ExplorarBiomas 
-                  saberes={saberes} 
-                  selectedBiome={selectedBiomeFilter} 
-                  setSelectedBiome={setSelectedBiomeFilter}
-                  selectedCommunity={selectedCommunityFilter}
-                  setSelectedCommunity={setSelectedCommunityFilter}
-                  searchQuery={searchQuery}
-                  onSelectSaber={handleSelectSaberLineage}
-                />
-              )}
+                  {activeTab === 'biomas' && (
+                    <ExplorarBiomas 
+                      saberes={saberes} 
+                      selectedBiome={selectedBiomeFilter} 
+                      setSelectedBiome={setSelectedBiomeFilter}
+                      selectedCommunity={selectedCommunityFilter}
+                      setSelectedCommunity={setSelectedCommunityFilter}
+                      searchQuery={searchQuery}
+                      onSelectSaber={handleSelectSaberLineage}
+                    />
+                  )}
 
-              {activeTab === 'linhagem' && (
-                <LinhagemSaberes 
-                  saberes={saberes} 
-                  selectedSaberId={selectedSaberId}
-                  onSelectSaber={setSelectedSaberId}
-                />
-              )}
+                  {activeTab === 'linhagem' && (
+                    <LinhagemSaberes 
+                      saberes={saberes} 
+                      selectedSaberId={selectedSaberId}
+                      onSelectSaber={setSelectedSaberId}
+                    />
+                  )}
 
-              {activeTab === 'guardia' && (
-                <PainelGuardia 
-                  saberes={saberes} 
-                  onStartRitual={(saber) => setActiveValidationSaber(saber)}
-                  onMediateDispute={handleMediateDispute}
-                  currentUser={currentUser}
-                />
-              )}
+                  {activeTab === 'guardia' && (
+                    <PainelGuardia 
+                      saberes={saberes} 
+                      onStartRitual={(saber) => setActiveValidationSaber(saber)}
+                      onMediateDispute={handleMediateDispute}
+                      currentUser={currentUser}
+                    />
+                  )}
 
-              {activeTab === 'contribuicao' && (
-                <RitualContribuicao 
-                  onSubmit={handleNewSaberContributed}
-                  currentUser={currentUser}
-                />
+                  {activeTab === 'contribuicao' && (
+                    <RitualContribuicao 
+                      onSubmit={handleNewSaberContributed}
+                      currentUser={currentUser}
+                    />
+                  )}
+                </>
               )}
             </>
           )}
