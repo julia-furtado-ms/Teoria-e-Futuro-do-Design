@@ -24,11 +24,26 @@ export default function PainelGuardia({
   const pendingSaberes = saberes.filter(s => s.status === 'QUARENTENA');
   const disputeSaberes = saberes.filter(s => s.status === 'DIVERGENCIA');
   
-  // Stats counters based on actual state!
-  const countValidados = saberes.filter(s => s.status === 'VALIDADO').length + 1100; // Offset base stat
+  // Stats counters derived from available data (no static offsets)
+  const countValidados = saberes.filter(s => s.status === 'VALIDADO').length;
   const countQuarentena = pendingSaberes.length;
-  const countSilenciados = 178;
-  const countTotal = countValidados + countQuarentena + countSilenciados + disputeSaberes.length;
+  const countSilenciados = saberes.filter(s => s.status === 'RESTRITO' || !!s.restrictedLevel).length;
+  const countTotal = saberes.length;
+  const safeTotal = Math.max(1, countTotal);
+
+  // Determine if we have geographic data to render the traceability map
+  const hasCoordinates = saberes.some(s => !!s.coordinates && /\d/.test(s.coordinates));
+
+  // Derive active guardians from validation metadata (only real validators)
+  const guardiansByName: Record<string, string> = {};
+  for (const s of saberes) {
+    if (s.validation?.validatorName) {
+      if (!guardiansByName[s.validation.validatorName]) {
+        guardiansByName[s.validation.validatorName] = s.validation.date;
+      }
+    }
+  }
+  const activeGuardians = Object.entries(guardiansByName).map(([name, date]) => ({ name, date }));
 
   const handleStartValidation = (saber: Saber) => {
     if (!isAuthorized) {
@@ -225,55 +240,19 @@ export default function PainelGuardia({
           </div>
 
           <div className="relative h-64 w-full bg-surface-dim rounded-xl overflow-hidden shadow-inner border border-mineral-gray/15">
-            {/* Topographical background rendering */}
-            <img 
-              className="w-full h-full object-cover opacity-45 mix-blend-multiply grayscale filter brightness-95 contrast-105" 
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1hfRqxLqwEYJt1N50guX2dwlutdaeqdgu7VIjugC1uqnnm5zCdPUh4Qzt1gZIJ5PoWm8jy6E_KnzJXRbSdVD61CAE8-aOnO-2G6W16mwAJ-LeAsKbTVIwdfb1c1kXwZheOZ4B3Kpn6kJzOgMJEc1zPvW89fMdYiyqtG827bMgJoUGfCHT-BxsD8ZfB1FfXQz5NDCP7Eb899Jyio8GPXU0TXcsRgw5vIDYZXrvcKiGKiONuUaOg5LqdjCiS8yFqGJaiP1EHNqe7gw"
-              alt="Topology Savannah Map"
-              referrerPolicy="no-referrer"
-            />
-            
-            {/* Blinking Glowing Activity nodes overlay inside Savannah */}
-            <div className="absolute top-1/4 left-1/3 group">
-              <span className="absolute -inset-2 rounded-full bg-validation-seal/30 animate-ping"></span>
-              <span className="relative w-3.5 h-3.5 bg-validation-seal rounded-full block border-2 border-white cursor-pointer shadow-sm"></span>
-              {/* Tooltip on hover */}
-              <div className="absolute left-6 top-1/2 -translate-y-1/2 bg-restricted-dark text-white p-2 text-[10px] font-mono rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 shadow-lg border border-white/5 pointer-events-none z-20">
-                MUMBUCA (Buriti Validado)
+            {hasCoordinates ? (
+              <div className="w-full h-full flex items-center justify-center text-sm text-mineral-gray">
+                {/* Placeholder for real map rendering when geo data is available. For now, render a neutral background. */}
+                <div className="w-full h-full bg-topography-pattern opacity-30" />
               </div>
-            </div>
-
-            <div className="absolute bottom-1/3 right-1/4 group">
-              <span className="absolute -inset-2 rounded-full bg-quarantine-amber/30 animate-pulse"></span>
-              <span className="relative w-3.5 h-3.5 bg-quarantine-amber rounded-full block border-2 border-white cursor-pointer shadow-sm"></span>
-              <div className="absolute left-6 top-1/2 -translate-y-1/2 bg-restricted-dark text-white p-2 text-[10px] font-mono rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 shadow-lg border border-white/5 pointer-events-none z-20">
-                NIQUELÂNDIA (Barbatimão Pendente)
+            ) : (
+              <div className="w-full h-full flex items-center justify-center p-6 text-center">
+                <div>
+                  <p className="font-semibold text-on-surface mb-2">Mapeamento geográfico indisponível</p>
+                  <p className="text-xs text-mineral-gray/80">Sem dados de coordenadas confiáveis para exibir a rastreabilidade territorial.</p>
+                </div>
               </div>
-            </div>
-
-            <div className="absolute top-[45%] right-1/2 group">
-              <span className="absolute -inset-2 rounded-full bg-conflict-red/30 animate-pulse"></span>
-              <span className="relative w-3.5 h-3.5 bg-conflict-red rounded-full block border-2 border-white cursor-pointer shadow-sm"></span>
-              <div className="absolute left-6 top-1/2 -translate-y-1/2 bg-restricted-dark text-white p-2 text-[10px] font-mono rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 shadow-lg border border-white/5 pointer-events-none z-20">
-                SÍTIO ARARAS (Divergência Ativa)
-              </div>
-            </div>
-
-            {/* Geographical chips tags legends */}
-            <div className="absolute bottom-4 left-4 bg-paper-background/95 p-3 rounded-lg border border-mineral-gray/25 backdrop-blur-xs select-none space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-validation-seal"></span>
-                <span className="font-mono text-[9px] font-bold text-on-surface uppercase tracking-wide">
-                  Aporte Validado (Cavalcante-GO)
-                </span>
-              </div>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="w-2 h-2 rounded-full bg-quarantine-amber"></span>
-                <span className="font-mono text-[9px] font-bold text-on-surface uppercase tracking-wide">
-                  Aporte em Análise (Niquelândia-GO)
-                </span>
-              </div>
-            </div>
+            )}
           </div>
         </section>
 
@@ -312,7 +291,7 @@ export default function PainelGuardia({
                   <span>{countValidados}</span>
                 </div>
                 <div className="w-full h-1.5 bg-white/15 rounded-full select-none overflow-hidden">
-                  <div className="h-full bg-validation-seal rounded-full transition-all duration-500 ease-out" style={{ width: `${(countValidados / countTotal) * 100}%` }}></div>
+                  <div className="h-full bg-validation-seal rounded-full transition-all duration-500 ease-out" style={{ width: `${(countValidados / safeTotal) * 100}%` }}></div>
                 </div>
               </div>
 
@@ -322,7 +301,7 @@ export default function PainelGuardia({
                   <span>{countQuarentena + disputeSaberes.length}</span>
                 </div>
                 <div className="w-full h-1.5 bg-white/15 rounded-full select-none overflow-hidden">
-                  <div className="h-full bg-quarantine-amber rounded-full transition-all duration-500 ease-out" style={{ width: `${((countQuarentena + disputeSaberes.length) / countTotal) * 100}%` }}></div>
+                  <div className="h-full bg-quarantine-amber rounded-full transition-all duration-500 ease-out" style={{ width: `${((countQuarentena + disputeSaberes.length) / safeTotal) * 100}%` }}></div>
                 </div>
               </div>
 
@@ -359,45 +338,36 @@ export default function PainelGuardia({
           </div>
         </section>
 
-        {/* Active Guardians panel (Recent Contributors) */}
+        {/* Active Guardians panel (only show if there are real validators) */}
         <section className="bg-surface-container p-6 rounded-2xl border border-outline/25 shadow-xs">
           <h3 className="font-mono text-[10px] font-bold text-clay-terracotta uppercase tracking-wider mb-5">
             GUARDIÃS ATIVAS
           </h3>
 
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-forest-deep flex items-center justify-center text-white text-[10px] font-mono font-bold select-none shadow-sm">
-                TC
-              </div>
-              <div>
-                <p className="font-sans text-sm font-semibold tracking-tight text-on-surface">Tiago Canindé</p>
-                <p className="font-mono text-[10px] text-mineral-gray/80">Há 12 min • Cavalcante</p>
-              </div>
+          {activeGuardians.length > 0 ? (
+            <div className="space-y-4">
+              {activeGuardians.map((g) => {
+                const initials = g.name.split(' ').map(n => n[0]).slice(0,2).join('').toUpperCase();
+                return (
+                  <div key={g.name} className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-[10px] font-mono font-bold select-none shadow-sm">
+                      {initials}
+                    </div>
+                    <div>
+                      <p className="font-sans text-sm font-semibold tracking-tight text-on-surface">{g.name}</p>
+                      <p className="font-mono text-[10px] text-mineral-gray/80">{g.date || 'Data não registrada'}</p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-cerrado-ochre flex items-center justify-center text-white text-[10px] font-mono font-bold select-none shadow-sm">
-                MR
-              </div>
-              <div>
-                <p className="font-sans text-sm font-semibold tracking-tight text-on-surface">Mãe Rita de Cássia</p>
-                <p className="font-mono text-[10px] text-mineral-gray/80">Há 2 horas • Quilombo Mesquita</p>
-              </div>
+          ) : (
+            <div className="text-sm text-mineral-gray/80">
+              Nenhuma guardiã ativa registrada ou validações públicas disponíveis no momento.
             </div>
+          )}
 
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-mineral-gray flex items-center justify-center text-white text-[10px] font-mono font-bold select-none shadow-sm">
-                JB
-              </div>
-              <div>
-                <p className="font-sans text-sm font-semibold tracking-tight text-on-surface">João Bororo</p>
-                <p className="font-mono text-[10px] text-mineral-gray/80">Há 5 horas • TI Meruri</p>
-              </div>
-            </div>
-          </div>
-
-          <button className="w-full mt-6 py-2 border border-primary/20 hover:bg-primary/5 active:scale-98 transition-all text-primary font-mono text-[10px] font-extrabold uppercase tracking-widest leading-none block text-center rounded-lg select-none">
+          <button disabled className="w-full mt-6 py-2 border border-primary/20 bg-transparent opacity-60 cursor-not-allowed transition-all text-primary font-mono text-[10px] font-extrabold uppercase tracking-widest leading-none block text-center rounded-lg select-none">
             Ver Teia Completa
           </button>
         </section>

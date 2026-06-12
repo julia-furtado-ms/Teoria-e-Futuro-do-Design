@@ -34,7 +34,7 @@ export default function App() {
         console.error('Failed to parse saved current user:', e);
       }
     }
-    return DEFAULT_USER; // Default to Dona Jovina on first boot
+    return null; // Start without login
   });
 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
