@@ -377,6 +377,12 @@ export default function RitualContribuicao({ onSubmit, currentUser }: RitualCont
                   Escolha uma comunidade e uma anciã já registradas na rede. Se não houver correspondência, faça login para registrar novos nomes.
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+
+        {/* Section 3: The 4 Intencionalidade Questions block (Screenshot 4) */}
+        <div className="bg-restricted-dark text-white p-8 rounded-2xl space-y-8 relative overflow-hidden shadow-md">
           {/* subtle paper texture blend */}
           <div className="absolute inset-0 opacity-5 pointer-events-none paper-texture bg-blend-soft-light"></div>
           
