@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Saber, BiomeType, User } from '../types';
+import { Saber, BiomeType, User, Community } from '../types';
 import { 
   Info, Sparkles, Save, CheckCircle, FileText, Trash2, ChevronRight, ShieldAlert, TreeDeciduous
 } from 'lucide-react';
@@ -31,6 +31,8 @@ export default function RitualContribuicao({ onSubmit, currentUser }: RitualCont
   const [linkLabel, setLinkLabel] = useState('');
   const [rawMaterials, setRawMaterials] = useState<string[]>([]);
   const [materialInput, setMaterialInput] = useState('');
+  const [knowledgeBranch, setKnowledgeBranch] = useState<'RAIZ' | 'TRONCO' | 'GALHO' | 'FOLHA'>('TRONCO');
+  const [registeredCommunities, setRegisteredCommunities] = useState<Community[]>([]);
 
   // Auto-fill form values based on authenticated user
   useEffect(() => {
@@ -62,6 +64,27 @@ export default function RitualContribuicao({ onSubmit, currentUser }: RitualCont
       setLiveHash('sha256:awaiting_input...');
     }
   }, [saberText]);
+
+  const saberTypeMap = {
+    RAIZ: 'RAIZ: MATÉRIA-PRIMA' as const,
+    TRONCO: 'TRONCO: SABER ANCESTRAL' as const,
+    GALHO: 'GALHO: COMENTÁRIO' as const,
+    FOLHA: 'FOLHA: RESPOSTA' as const,
+  };
+
+  useEffect(() => {
+    const saved = localStorage.getItem('teia_communities');
+    if (!saved) {
+      setRegisteredCommunities([]);
+      return;
+    }
+
+    try {
+      setRegisteredCommunities(JSON.parse(saved) as Community[]);
+    } catch {
+      setRegisteredCommunities([]);
+    }
+  }, []);
 
   const isValidUrl = (value: string) => {
     try {
@@ -126,8 +149,21 @@ export default function RitualContribuicao({ onSubmit, currentUser }: RitualCont
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !saberText.trim() || !community.trim()) {
-      alert('Por favor, preencha o título, o relato e o nome da comunidade.');
+    if (!title.trim() || !saberText.trim() || !community.trim() || !lineage.trim()) {
+      alert('Por favor, preencha o título, o relato, o nome da comunidade e a linhagem (anciã).');
+      return;
+    }
+
+    if (knowledgeBranch === 'RAIZ' && rawMaterials.length === 0) {
+      alert('As contribuições Raiz precisam listar pelo menos uma matéria-prima.');
+      return;
+    }
+
+    const communityMatch = registeredCommunities.find(c => c.name.toLowerCase() === community.trim().toLowerCase());
+    const elderMatch = registeredCommunities.some(c => c.elderName?.toLowerCase() === lineage.trim().toLowerCase());
+
+    if (!currentUser && (!communityMatch || !elderMatch)) {
+      alert('Por favor, selecione uma comunidade e uma anciã já registradas na Teia ou faça login para registrar novos nomes.');
       return;
     }
 
@@ -261,79 +297,86 @@ export default function RitualContribuicao({ onSubmit, currentUser }: RitualCont
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="community" className="font-mono text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">
-                  Nome da Comunidade ou Território
-                </label>
-                <input
-                  type="text"
-                  id="community"
-                  required
-                  value={community}
-                  onChange={(e) => setCommunity(e.target.value)}
-                  placeholder="Ex: Comunidade Kalunga - Engenho II"
-                  className="bg-surface-container-low border border-outline/30 rounded-lg p-3 font-sans text-sm focus:outline-none focus:ring-1 focus:ring-cerrado-ochre text-on-surface placeholder-on-surface-variant/40"
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="lineage" className="font-mono text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">
-                  Linhagem (Mestre / Anciã de Transmissão)
-                </label>
-                <input
-                  type="text"
-                  id="lineage"
-                  required
-                  value={lineage}
-                  onChange={(e) => setLineage(e.target.value)}
-                  placeholder="Ex: Dona Sebastiana dos Santos"
-                  className="bg-surface-container-low border border-outline/30 rounded-lg p-3 font-sans text-sm focus:outline-none focus:ring-1 focus:ring-cerrado-ochre text-on-surface placeholder-on-surface-variant/40"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Section 2: O Saber Description (The Relato card) */}
-        <div className="bg-surface-container border border-outline/20 p-8 rounded-2xl shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-4 opacity-5 select-none md:block hidden">
-            <TreeDeciduous className="w-48 h-48 text-forest-deep" />
-          </div>
-
-          <div className="relative z-10 space-y-6">
-            <div>
-              <span className="font-mono text-[9px] font-bold text-mineral-gray uppercase tracking-widest block mb-2 select-none">
-                02. O SABER
-              </span>
-              <h3 className="font-serif text-[22px] font-bold text-forest-deep tracking-tight">
-                Relato da Vivência
-              </h3>
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <textarea
-                id="saberText"
-                required
-                rows={8}
-                value={saberText}
-                onChange={(e) => setSaberText(e.target.value)}
-                placeholder="Comece o relato aqui, honrando o tempo, os tempos da lua, as colheitas precisas e o assentamento das palavras..."
-                className="w-full bg-paper-background/40 border border-mineral-gray/20 rounded-lg p-6 font-serif text-lg leading-relaxed placeholder:opacity-30 italic text-on-surface focus:outline-none focus:ring-1 focus:ring-cerrado-ochre"
-              />
-
-              <div className="flex justify-between items-center mt-3 border-t border-mineral-gray/10 pt-3 select-none">
-                <p className="font-mono text-xs text-on-surface-variant/75">
-                  Traceability Hash: <span className="text-clay-terracotta font-bold select-all">{liveHash}</span>
+              <div className="mt-4 rounded-2xl border border-mineral-gray/10 bg-surface-container-low p-4">
+                <span className="font-mono text-[9px] font-bold text-mineral-gray uppercase tracking-widest mb-3 block">
+                  01B. NATUREZA DO SABER
+                </span>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { value: 'RAIZ', label: 'Raiz • Matéria-prima' },
+                    { value: 'TRONCO', label: 'Tronco • Saber ancestral' },
+                    { value: 'GALHO', label: 'Galho • Comentário' },
+                    { value: 'FOLHA', label: 'Folha • Resposta' }
+                  ].map((option) => (
+                    <label key={option.value} className="cursor-pointer rounded-2xl border border-outline/30 px-4 py-3 text-sm font-medium transition-all hover:border-cerrado-ochre/60">
+                      <input
+                        type="radio"
+                        name="knowledgeBranch"
+                        value={option.value}
+                        checked={knowledgeBranch === option.value}
+                        onChange={() => setKnowledgeBranch(option.value as typeof knowledgeBranch)}
+                        className="mr-2 accent-cerrado-ochre"
+                      />
+                      {option.label}
+                    </label>
+                  ))}
+                </div>
+                <p className="mt-3 text-sm text-on-surface-variant">
+                  Raiz registra matérias primas básicas, Tronco preserva o saber ancestral central, Galho documenta um comentário ou adição viva e Folha é uma resposta feita a um comentário prévio.
                 </p>
-                <FileText className="w-4.5 h-4.5 text-mineral-gray/40" />
               </div>
-            </div>
-          </div>
-        </div>
 
-        {/* Section 3: The 4 Intencionalidade Questions block (Screenshot 4) */}
-        <div className="bg-restricted-dark text-white p-8 rounded-2xl space-y-8 relative overflow-hidden shadow-md">
+              <div className="mt-4 grid grid-cols-1 gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="community" className="font-mono text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">
+                    Nome da Comunidade ou Território
+                  </label>
+                  <input
+                    type="text"
+                    id="community"
+                    required
+                    list="registered-communities"
+                    value={community}
+                    onChange={(e) => setCommunity(e.target.value)}
+                    placeholder="Ex: Comunidade Kalunga - Engenho II"
+                    className="bg-surface-container-low border border-outline/30 rounded-lg p-3 font-sans text-sm focus:outline-none focus:ring-1 focus:ring-cerrado-ochre text-on-surface placeholder-on-surface-variant/40"
+                  />
+                  <datalist id="registered-communities">
+                    {registeredCommunities.map((item) => (
+                      <option key={item.name} value={item.name} />
+                    ))}
+                  </datalist>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="lineage" className="font-mono text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">
+                    Linhagem (Mestre / Anciã de Transmissão)
+                  </label>
+                  <input
+                    type="text"
+                    id="lineage"
+                    required
+                    list="registered-elders"
+                    value={lineage}
+                    onChange={(e) => setLineage(e.target.value)}
+                    placeholder="Ex: Dona Sebastiana dos Santos"
+                    className="bg-surface-container-low border border-outline/30 rounded-lg p-3 font-sans text-sm focus:outline-none focus:ring-1 focus:ring-cerrado-ochre text-on-surface placeholder-on-surface-variant/40"
+                  />
+                  <datalist id="registered-elders">
+                    {registeredCommunities
+                      .filter((item) => item.elderName)
+                      .map((item) => (
+                        <option key={`${item.name}-${item.elderName}`} value={item.elderName!} />
+                      ))}
+                  </datalist>
+                </div>
+              </div>
+
+              {!currentUser && registeredCommunities.length > 0 && (
+                <div className="mt-3 rounded-2xl border border-mineral-gray/10 bg-surface-container-low p-4 text-sm text-on-surface-variant">
+                  Escolha uma comunidade e uma anciã já registradas na rede. Se não houver correspondência, faça login para registrar novos nomes.
+                </div>
+              )}
           {/* subtle paper texture blend */}
           <div className="absolute inset-0 opacity-5 pointer-events-none paper-texture bg-blend-soft-light"></div>
           

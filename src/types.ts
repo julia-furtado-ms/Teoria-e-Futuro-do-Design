@@ -16,6 +16,8 @@ export type SaberStatus =
 export interface Community {
   name: string;
   description?: string;
+  elderName?: string;
+  registeredAt?: string;
 }
 
 export interface SaberRelation {

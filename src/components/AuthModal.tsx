@@ -23,6 +23,25 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess }
 
   const [error, setError] = useState<string | null>(null);
 
+  const loadRegisteredCommunities = () => {
+    const current = localStorage.getItem('teia_communities');
+    if (!current) return [] as Array<{ name: string; elderName: string; territory: string; description: string; registeredAt?: string }>;
+    try {
+      return JSON.parse(current) as Array<{ name: string; elderName: string; territory: string; description: string; registeredAt?: string }>;
+    } catch {
+      return [] as Array<{ name: string; elderName: string; territory: string; description: string; registeredAt?: string }>;
+    }
+  };
+
+  const saveCommunityRecord = (community: { name: string; elderName: string; territory: string; description: string; }) => {
+    const registered = loadRegisteredCommunities();
+    const exists = registered.some(c => c.name.toLowerCase() === community.name.toLowerCase());
+    if (!exists) {
+      registered.push({ ...community, registeredAt: new Date().toISOString() });
+      localStorage.setItem('teia_communities', JSON.stringify(registered));
+    }
+  };
+
   // Quick-test seed users for easy testing
   const seedUsers = [
     {
@@ -82,6 +101,12 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess }
       usersList.push(newUser);
       localStorage.setItem('teia_registered', JSON.stringify(usersList));
       localStorage.setItem(`teia_pwd_${seed.email}`, seed.password);
+      saveCommunityRecord({
+        name: seed.communityName,
+        elderName: seed.username,
+        territory: seed.territory,
+        description: `Comunidade registrada por ${seed.username} no território ${seed.territory}.`,
+      });
     }
     
     // Simulate login for them
@@ -145,6 +170,13 @@ export default function AuthModal({ onClose, onLoginSuccess, onRegisterSuccess }
         biome,
         territory,
       };
+
+      saveCommunityRecord({
+        name: communityName,
+        elderName: username,
+        territory,
+        description: `Comunidade registrada por ${username} no território ${territory}.`,
+      });
 
       usersList.push(newUser);
       localStorage.setItem('teia_registered', JSON.stringify(usersList));
