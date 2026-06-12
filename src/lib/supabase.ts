@@ -41,8 +41,7 @@ export async function fetchSaberes(): Promise<SupabaseFetchResult<Saber[]>> {
   try {
     const { data, error } = await supabase
       .from<Saber>('saberes')
-      .select('*')
-      .order('createdAt', { ascending: false });
+      .select('*');
 
     return { data, error };
   } catch (error: unknown) {
