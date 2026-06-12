@@ -30,7 +30,7 @@ function createErrorResult<T>(message: string): SupabaseFetchResult<T> {
       table: null,
       constraint: null,
     }
-  } as SupabaseFetchResult<T>;
+  } as unknown as SupabaseFetchResult<T>;
 }
 
 export async function fetchSaberes(): Promise<SupabaseFetchResult<Saber[]>> {
